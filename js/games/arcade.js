@@ -63,7 +63,7 @@ makeTurnGame({
   opts: [{ k: "secs", label: "وقت الجري (ثانية)", def: 45, min: 20, max: 120 }],
   how: o => `عندك ٣ أرواح و<b>${AR(o.secs)} ثانية</b>.<br>اسحب يمين وشمال لتغيّر الحارة، <b>فوق</b> عشان تقفز فوق 🚧، و<b>تحت</b> عشان تنزلق تحت 🏗️. العربيات 🚌 غيّر الحارة.`,
   play(arena, done, o, t) {
-    return runnerEngine(arena, { seed: 1 + rand(9999), seconds: o.secs, lives: 3, sprite: teamSprite(t),
+    return runnerEngine(arena, { seed: 1 + rand(9999), seconds: o.secs, lives: 3, sprite: teamSprite(t), color: t && t.color,
       onEnd: s => done(Math.floor(s / 10), `جريتوا لحد ${AR(s)} 🏃`) });
   }
 });
@@ -73,7 +73,7 @@ const launcherGame = (id, title, icon, color, desc, ammo, style, how) => makeTur
   id, title, icon, color, desc, tag: "فرق · موبايل واحد · حركة",
   opts: [{ k: "shots", label: "عدد الطلقات", def: 5, min: 3, max: 10 }],
   how: o => `عندك <b>${AR(o.shots)} طلقات</b>. اسحب ${ammo} من المقلاع لورا وسيّبه. ${how}`,
-  play: (arena, done, o) => launcherEngine(arena, { shots: o.shots, ammo, style, onEnd: (s, msg) => done(Math.floor(s / 10), msg) })
+  play: (arena, done, o, t) => launcherEngine(arena, { shots: o.shots, ammo, style, color: t && t.color, onEnd: (s, msg) => done(Math.floor(s / 10), msg) })
 });
 launcherGame("boats", "فاصل المراكب", "⛵", "#2a7fa8", "اسحب المقلاع وارمي الكورة وفاصل المراكب على القراصنة.", "⚽", "boats", "هدّ المراكب ووقّع القراصنة 🏴‍☠️.");
 launcherGame("cannon", "مدفع العيلة", "🎯", "#b7791f", "اضرب أفراد العيلة بالطماطم من المدفع (بالإيموجي طبعًا!).", "🍅", "family", "صيّب الإيموجي اللي فوق الصناديق.");

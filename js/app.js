@@ -1,5 +1,5 @@
 // ===== التطبيق: المكتبة، الفرق، أسئلة العيلة، والتنقّل =====
-const ORDER = ["lamma", "tf", "heads", "proverbs", "emoji", "bluff", "killer", "hide", "race", "runner", "boats", "cannon", "tap", "simon", "hunt", "draw", "heavy", "code"];
+const ORDER = ["lamma", "tf", "heads", "proverbs", "emoji", "bluff", "killer", "hide", "race", "traps", "runner", "boats", "cannon", "tap", "simon", "hunt", "draw", "heavy", "code"];
 
 function soundBtn() {
   return `<button class="icon" onclick="S.prefs.sound=!S.prefs.sound;save();route()" aria-label="${S.prefs.sound ? "اقفل الصوت" : "شغّل الصوت"}">${S.prefs.sound ? "🔊" : "🔇"}</button>`;
@@ -22,7 +22,9 @@ function homeView(root) {
     <h2 class="mt">الباقات</h2><div class="chips">
     ${Object.entries({ g: "📚 عام", rm: "🌙 رمضان", eid: "🎈 العيد", sm: "🏖️ الصيف" }).map(([k, l]) =>
       `<label class="chip"><input type="checkbox" ${p.packs[k] ? "checked" : ""} onchange="S.prefs.packs.${k}=this.checked;save()"> ${l}</label>`).join("")}</div>
-    <p class="note">المستوى والباقات بيأثّروا على الأسئلة والتحديات والفوازير.</p></section>
+    <p class="note">المستوى والباقات بيأثّروا على الأسئلة والتحديات والفوازير.</p>
+    <h2 class="mt">الرسومات</h2><div class="chips">
+    ${[[false, "🧊 3D"], [true, "🪶 خفيف (لموبايل ضعيف)"]].map(([v, l]) => `<label class="chip"><input type="radio" name="gfx" ${!!p.flat === v ? "checked" : ""} onchange="S.prefs.flat=${v};save()"> ${l}</label>`).join("")}</div></section>
   <a class="panel familylink" href="#/family"><span class="ic">👨‍👩‍👧</span><span><b>أسئلة عن العيلة</b>
     <small>${S.family.length ? `عندك ${AR(S.family.length)} سؤال` : "اكتب أسئلة عن عيلتك تظهر في «لمّة العيلة»"}</small></span><span>◀</span></a>`;
 }
@@ -31,10 +33,10 @@ function teamsView(root) {
   root.innerHTML = `
   <header class="top"><a class="backlink" href="#/"><span aria-hidden="true">→</span> رجوع</a><h1>الفرق</h1>${soundBtn()}</header>
   <section class="panel"><h2>نمط اللعب</h2><div class="chips">
-    ${[["1v1", "1 ضد 1"], ["1v2", "1 ضد 2"], ["1vall", "1 ضد الكل"], ["2", "فريقين"], ["3", "٣ فرق"], ["4", "٤ فرق"], ["solo", "كل واحد لوحده"]].map(([k, l]) =>
+    ${[["solo1", "🙋 سولو (لاعب واحد)"], ["1v1", "1 ضد 1"], ["1v2", "1 ضد 2"], ["1vall", "1 ضد الكل"], ["2", "فريقين"], ["3", "٣ فرق"], ["4", "٤ فرق"], ["solo", "كل واحد لوحده"]].map(([k, l]) =>
       `<button class="chip" onclick="setMode('${k}')">${l}</button>`).join("")}</div>
-    <p class="note">«كل واحد لوحده» بيعمل فريق لكل لاعب (اختار العدد من ٣ لـ ٨). كل فريق ليه لون، وكارت الدور والأسئلة بتظهر بلونه.</p>
-    ${numField("solon", "عدد اللاعيبة (لـ «كل واحد لوحده»)", 4, 3, 8)}</section>
+    <p class="note">«سولو» للعب لوحدك (بتتحسب نقطك على الجولات). «كل واحد لوحده» بيعمل فريق لكل لاعب (من ٢ لـ ٨). كل فريق ليه لون، وكارت الدور والأسئلة بتظهر بلونه.</p>
+    ${numField("solon", "عدد اللاعيبة (لـ «كل واحد لوحده»)", 4, 2, 8)}</section>
   ${S.teams.map((t, i) => `<section class="panel team">
     <details class="avbox"><summary aria-label="غيّر شكل الفريق">${avatar(t, "lg")}</summary>
       <div class="avgrid">${AVATARS.map(a => `<button type="button" class="${!t.photo && t.avatar === a ? "sel" : ""}" onclick="setAvatar(${i},'${a}')">${a}</button>`).join("")}</div>
@@ -44,7 +46,7 @@ function teamsView(root) {
     <div class="swatches" role="radiogroup" aria-label="لون الفريق ${AR(i + 1)}">${TEAM_COLORS.map(c => `<button type="button" role="radio" aria-checked="${t.color === c.c}" aria-label="${c.n}" class="${t.color === c.c ? "sel" : ""}"
       style="background:${c.c}" onclick="setColor(${i},'${c.c}')"></button>`).join("")}</div>
     <input type="text" value="${esc(t.name)}" maxlength="20" aria-label="اسم الفريق ${AR(i + 1)}" oninput="S.teams[${i}].name=this.value;save()" onblur="fixName(${i})">
-    <button class="icon" aria-label="امسح الفريق" onclick="removeTeam(${i})" ${S.teams.length <= 2 ? "disabled" : ""}>✕</button>
+    <button class="icon" aria-label="امسح الفريق" onclick="removeTeam(${i})" ${S.teams.length <= 1 ? "disabled" : ""}>✕</button>
   </section>`).join("")}
   <button class="ghost" onclick="addTeam()" ${S.teams.length >= 8 ? "disabled" : ""}>+ فريق جديد</button>
   <p class="note">تغيير الفرق بيلغي اللعبة الشغّالة.</p>
@@ -61,11 +63,12 @@ function setColor(i, c) {   // لو اللون عند فريق تاني بنبد
   S.teams[i].color = c; S.match = null; save(); route();
 }
 const MODES = {
+  solo1: ["أنا"],
   "1v1": ["اللاعب الأول", "اللاعب التاني"], "1v2": ["الواحد", "الاتنين"], "1vall": ["الواحد", "الباقيين"],
   "2": TEAM_COLORS.slice(0, 2).map(c => "الفريق " + c.n), "3": TEAM_COLORS.slice(0, 3).map(c => "الفريق " + c.n), "4": TEAM_COLORS.slice(0, 4).map(c => "الفريق " + c.n)
 };
 function setMode(k) {
-  const names = k === "solo" ? Array.from({ length: clamp($("#solon").value, 3, 8, 4) }, (_, i) => "لاعب " + AR(i + 1)) : MODES[k];
+  const names = k === "solo" ? Array.from({ length: clamp($("#solon").value, 2, 8, 4) }, (_, i) => "لاعب " + AR(i + 1)) : MODES[k];
   S.teams = names.map(makeTeam); S.match = null; save(); route();
 }
 function removeTeam(i) { S.teams.splice(i, 1); S.match = null; save(); route(); }

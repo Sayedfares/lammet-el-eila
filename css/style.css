@@ -263,6 +263,13 @@ pre { background: var(--soft); padding: 10px; border-radius: 10px; overflow-x: a
 .slot { width: 44px; height: 54px; display: grid; place-items: center; font-size: 1.8rem; font-weight: 900; border-radius: 12px; background: var(--soft); border: 2px solid var(--line); }
 .slot.on { background: #4a5ad8; color: #fff; border-color: #4a5ad8; }
 
+/* ===== 3D والفخاخ ===== */
+.hud3d { position: absolute; top: 8px; left: 12px; right: 12px; display: flex; justify-content: space-between; gap: 8px; color: #fff; font-weight: 800; font-size: 1.1rem; text-shadow: 0 1px 4px rgba(0,0,0,.7); pointer-events: none; }
+.trapad { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch; }
+.trapad > div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.trapad button { padding: 22px 4px; font-size: 1.3rem; touch-action: none; user-select: none; -webkit-user-select: none; }
+.trapad .jump { background: #6a2fb0; color: #fff; font-size: 1.3rem; }
+
 /* ===== أسئلة العيلة ===== */
 .flist { list-style: none; padding: 0; margin: 0; }
 .flist li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }

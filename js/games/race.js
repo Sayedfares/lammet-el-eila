@@ -43,7 +43,7 @@ GAMES.race = {
     document.body.appendChild(box);
     const me = s.players.find(p => p.id === s.me);
     this.eng = runnerEngine($("#rarena"), {
-      seed: s.seed, seconds: s.secs, lives: 3, sprite: (me && me.avatar) || "🏃",
+      seed: s.seed, seconds: s.secs, lives: 3, sprite: (me && me.avatar) || "🏃", color: TEAM_COLORS[s.players.indexOf(me) % TEAM_COLORS.length].c,
       onScore: sc => this.push("progress", sc),
       onEnd: sc => { this.eng = () => { }; this.push("finish", sc); $("#rarena").innerHTML = `<p class="lead center">خلّصت بـ ${AR(sc)} نقطة! مستنيين الباقيين…</p>`; }
     });

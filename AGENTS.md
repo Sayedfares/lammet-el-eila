@@ -9,7 +9,7 @@ Family party-game library in Egyptian Arabic (RTL). Read this before editing.
 
 ## Hard rules
 - All user-facing text in **Egyptian colloquial Arabic** (عامية مصرية), RTL. Keep code comments short Arabic or English.
-- **No frameworks, no bundler, no external JS libraries.** Plain `<script>` files, global functions. Only external asset: Google Fonts (Cairo).
+- **No frameworks, no bundler.** Plain `<script>` files, global functions. The only JS library is the vendored `js/vendor/three.min.js` (three.js r149, UMD, MIT) for the 3D action games; everything else is hand-written. Only external asset: Google Fonts (Cairo). Every 3D game must fall back to a 2D canvas view when WebGL is missing or `S.prefs.flat` is on (`has3D()`).
 - `server.py` must stay **stdlib-only** (no pip installs).
 - Escape every dynamic string with `esc()` before putting it in HTML (team names, family questions and room answers are user input).
 - Content must be family-friendly and factually correct. Don't invent facts for quiz / true-false / bluff answers.
@@ -27,7 +27,10 @@ Family party-game library in Egyptian Arabic (RTL). Read this before editing.
 | `js/games/heads.js` | على الجبهة (device tilt via `deviceorientation`, tap fallback) |
 | `js/games/room.js` | `RoomBase`: shared client plumbing for room games (session in localStorage `lamma-<id>`, `api`, polling `/api/state` every 1.2s, entry/join screen, `act`) |
 | `js/games/bluff.js` | كدّاب ولا بجد؟ client (`{...RoomBase}`) |
-| `js/games/engines.js` | canvas engines: `runnerEngine` (3-lane runner, seeded rows so every device sees the same course) and `launcherEngine` (slingshot physics) |
+| `js/vendor/three.min.js` | three.js r149 UMD build (global `THREE`), vendored so it works offline on LAN |
+| `js/games/engines3d.js` | three.js views: `runnerView3D`, `launcherView3D`, `makeChar()` (3D character), `mk3D()` |
+| `js/games/traps.js` | لعبة الفخاخ: `trapEngine` (rage platformer; level = string, one char per column, see top of file) with 3D and 2D views, plus its `makeTurnGame` entry |
+| `js/games/engines.js` | game cores (logic + input) with swappable 2D/3D views: `runnerEngine` (3-lane runner, seeded rows so every device sees the same course) and `launcherEngine` (slingshot physics) |
 | `js/games/arcade.js` | `makeTurnGame()` for one-phone team games: game defines `play(arena, done, opts, team)` returning a cleanup fn. Defines runner, boats, cannon, tap, simon, hunt, draw, heavy, code |
 | `js/games/race.js` | سباق الجري room game; runs `runnerEngine` in a body overlay so polling repaints don't kill it (server: `RaceRoom`) |
 | `js/games/hide.js` | اتخبّى واتنكّر client (prop-hunt style; object list comes from `HIDE_OBJECTS` in `server.py`) |
