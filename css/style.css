@@ -81,7 +81,7 @@ pre { background: var(--soft); padding: 10px; border-radius: 10px; overflow-x: a
 .av.sm { width: 28px; height: 28px; font-size: 1rem; }
 .av.lg { width: 52px; height: 52px; font-size: 1.8rem; }
 .av.xl { width: 84px; height: 84px; font-size: 3rem; }
-.team { display: flex; align-items: center; gap: 10px; }
+.team { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .team input { flex: 1; }
 .avbox { position: relative; }
 .avbox summary { list-style: none; cursor: pointer; border-radius: 50%; }
@@ -102,11 +102,15 @@ pre { background: var(--soft); padding: 10px; border-radius: 10px; overflow-x: a
 .hero .ic { font-size: 3rem; }
 .hero h1 { margin: 0; }
 .hero p { margin: 4px 0 0; opacity: .92; }
-.turnhead { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 4px 0 14px; }
+.turnhead { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 4px 0 14px; background: var(--tc, var(--soft)); color: #fff; border-radius: 18px; padding: 10px 14px; box-shadow: var(--shadow); }
+.turnhead .meta { color: rgba(255,255,255,.9); }
+.swatches { display: flex; gap: 6px; flex-basis: 100%; order: 5; }
+.swatches button { width: 30px; height: 30px; border-radius: 50%; padding: 0; border: 2px solid var(--card); }
+.swatches button.sel { outline: 3px solid var(--ink); }
 .turn { font-size: 1.35rem; font-weight: 900; }
 .meta { color: var(--muted); font-size: .95rem; }
 .board { list-style: none; padding: 0; margin: 0; }
-.board li { display: flex; align-items: center; gap: 10px; padding: 8px 4px; border-bottom: 1px solid var(--line); }
+.board li { display: flex; align-items: center; gap: 10px; padding: 8px 8px; border-bottom: 1px solid var(--line); border-inline-start: 6px solid var(--tc, transparent); }
 .board li:last-child { border-bottom: 0; }
 .board li.now { font-weight: 800; background: var(--soft); border-radius: 10px; }
 .board .nm { flex: 1; }
@@ -197,6 +201,44 @@ pre { background: var(--soft); padding: 10px; border-radius: 10px; overflow-x: a
 .res.truth { border: 2px solid var(--ok); }
 .rt { font-weight: 800; font-size: 1.1rem; }
 .rm, .rv { font-size: .9rem; color: var(--muted); }
+
+/* ===== مين القاتل؟ ===== */
+.prompt.red { background: #c0392b; }
+.prompt small { font-weight: 600; opacity: .9; }
+.rolecard { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: center; padding: 16px; margin-bottom: 12px; border-radius: 20px;
+  background: var(--soft); border: 2px dashed var(--line); font-size: 1.1rem; }
+.rolecard small { font-weight: 400; color: var(--muted); }
+.rolecard.k { background: #c0392b; color: #fff; border: 0; } .rolecard.k small { color: rgba(255,255,255,.9); }
+.rolecard.c { background: #1f9d55; color: #fff; border: 0; } .rolecard.c small { color: rgba(255,255,255,.9); }
+.bar { height: 14px; border-radius: 99px; background: var(--line); overflow: hidden; margin: 6px 0; }
+.bar > div { height: 100%; background: var(--ok); transition: width .4s; }
+.tasks { display: flex; flex-direction: column; gap: 8px; }
+.task { justify-content: flex-start; background: var(--soft); text-align: start; }
+.task.done { text-decoration: line-through; }
+.dead { text-align: center; border-color: var(--bad); }
+.dead p { margin: 4px 0 0; }
+.killbtn { width: 100%; background: #c0392b; color: #fff; font-size: 1.3rem; padding: 18px; margin-bottom: 10px; }
+.pickgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stepper { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.stepper:last-of-type { border-bottom: 0; }
+.stepper span { flex: 1; }
+.stepper b { min-width: 5.5em; text-align: center; }
+.clock { text-align: center; font-size: 2.6rem; font-weight: 900; margin: 6px 0 12px; font-variant-numeric: tabular-nums; }
+.plist li.out { opacity: .55; }
+.overlay { position: fixed; inset: 0; z-index: 30; background: rgba(0,0,0,.6); display: grid; place-items: center; padding: 16px; }
+.sheet { background: var(--card); border-radius: 22px; padding: 18px; width: min(420px, 100%); }
+.sheet h2 { text-align: center; font-size: 1.2rem; }
+.seqgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 8px; }
+.seqgrid button { font-size: 1.6rem; padding: 22px 0; }
+.seqgrid button.ok { background: var(--ok); color: #fff; opacity: 1; }
+.holdbtn { width: 100%; font-size: 1.3rem; padding: 36px 0; touch-action: none; user-select: none; -webkit-user-select: none; }
+.sheet .code { font-size: 2.4rem; text-align: center; margin: 4px 0 10px; }
+
+/* ===== اتخبّى واتنكّر ===== */
+.prompt.teal { background: #0e8fa0; }
+.objgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+.objgrid button { padding: 10px 4px; font-size: .95rem; background: var(--card); border: 2px solid var(--line); }
+.objgrid button.sel { border-color: #0e8fa0; background: var(--soft); }
 
 /* ===== أسئلة العيلة ===== */
 .flist { list-style: none; padding: 0; margin: 0; }

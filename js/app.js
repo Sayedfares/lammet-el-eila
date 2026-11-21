@@ -1,5 +1,5 @@
 // ===== التطبيق: المكتبة، الفرق، أسئلة العيلة، والتنقّل =====
-const ORDER = ["lamma", "tf", "heads", "proverbs", "emoji", "bluff"];
+const ORDER = ["lamma", "tf", "heads", "proverbs", "emoji", "bluff", "killer", "hide"];
 
 function soundBtn() {
   return `<button class="icon" onclick="S.prefs.sound=!S.prefs.sound;save();route()" aria-label="${S.prefs.sound ? "اقفل الصوت" : "شغّل الصوت"}">${S.prefs.sound ? "🔊" : "🔇"}</button>`;
@@ -30,21 +30,44 @@ function homeView(root) {
 function teamsView(root) {
   root.innerHTML = `
   <header class="top"><a class="backlink" href="#/"><span aria-hidden="true">→</span> رجوع</a><h1>الفرق</h1>${soundBtn()}</header>
+  <section class="panel"><h2>نمط اللعب</h2><div class="chips">
+    ${[["1v1", "1 ضد 1"], ["1v2", "1 ضد 2"], ["1vall", "1 ضد الكل"], ["2", "فريقين"], ["3", "٣ فرق"], ["4", "٤ فرق"], ["solo", "كل واحد لوحده"]].map(([k, l]) =>
+      `<button class="chip" onclick="setMode('${k}')">${l}</button>`).join("")}</div>
+    <p class="note">«كل واحد لوحده» بيعمل فريق لكل لاعب (اختار العدد من ٣ لـ ٨). كل فريق ليه لون، وكارت الدور والأسئلة بتظهر بلونه.</p>
+    ${numField("solon", "عدد اللاعيبة (لـ «كل واحد لوحده»)", 4, 3, 8)}</section>
   ${S.teams.map((t, i) => `<section class="panel team">
     <details class="avbox"><summary aria-label="غيّر شكل الفريق">${avatar(t, "lg")}</summary>
       <div class="avgrid">${AVATARS.map(a => `<button type="button" class="${!t.photo && t.avatar === a ? "sel" : ""}" onclick="setAvatar(${i},'${a}')">${a}</button>`).join("")}</div>
       <div class="row"><label class="btn small">📷 صورة<input type="file" accept="image/*" hidden onchange="setPhoto(${i},this.files[0])"></label>
       ${t.photo ? `<button class="small" onclick="setAvatar(${i},'${esc(t.avatar)}')">شيل الصورة</button>` : ""}</div>
     </details>
+    <div class="swatches" role="radiogroup" aria-label="لون الفريق ${AR(i + 1)}">${TEAM_COLORS.map(c => `<button type="button" role="radio" aria-checked="${t.color === c.c}" aria-label="${c.n}" class="${t.color === c.c ? "sel" : ""}"
+      style="background:${c.c}" onclick="setColor(${i},'${c.c}')"></button>`).join("")}</div>
     <input type="text" value="${esc(t.name)}" maxlength="20" aria-label="اسم الفريق ${AR(i + 1)}" oninput="S.teams[${i}].name=this.value;save()" onblur="fixName(${i})">
     <button class="icon" aria-label="امسح الفريق" onclick="removeTeam(${i})" ${S.teams.length <= 2 ? "disabled" : ""}>✕</button>
   </section>`).join("")}
   <button class="ghost" onclick="addTeam()" ${S.teams.length >= 8 ? "disabled" : ""}>+ فريق جديد</button>
-  <p class="note">لو بتلعبوا أفراد مش فرق، اعمل فريق لكل واحد. تغيير عدد الفرق بيلغي اللعبة الشغّالة.</p>
+  <p class="note">تغيير الفرق بيلغي اللعبة الشغّالة.</p>
   <a class="primary btn" href="#/">تمام ✓</a>`;
 }
 function fixName(i) { if (!S.teams[i].name.trim()) { S.teams[i].name = "فريق " + AR(i + 1); save(); route(); } }
-function addTeam() { S.teams.push({ name: "فريق " + AR(S.teams.length + 1), avatar: AVATARS[S.teams.length % AVATARS.length], photo: null }); S.match = null; save(); route(); }
+function addTeam() {
+  const used = new Set(S.teams.map(t => t.color)), c = TEAM_COLORS.find(x => !used.has(x.c)) || TEAM_COLORS[0];
+  S.teams.push({ ...makeTeam("الفريق " + c.n, S.teams.length), color: c.c }); S.match = null; save(); route();
+}
+function setColor(i, c) {   // لو اللون عند فريق تاني بنبدّلهم عشان مفيش فريقين بنفس اللون
+  const j = S.teams.findIndex(t => t.color === c);
+  if (j >= 0 && j !== i) S.teams[j].color = S.teams[i].color;
+  S.teams[i].color = c; S.match = null; save(); route();
+}
+const MODES = {
+  "1v1": ["اللاعب الأول", "اللاعب التاني"], "1v2": ["الواحد", "الاتنين"], "1vall": ["الواحد", "الباقيين"],
+  "2": TEAM_COLORS.slice(0, 2).map(c => "الفريق " + c.n), "3": TEAM_COLORS.slice(0, 3).map(c => "الفريق " + c.n), "4": TEAM_COLORS.slice(0, 4).map(c => "الفريق " + c.n)
+};
+function setMode(k) {
+  const names = k === "solo" ? Array.from({ length: clamp($("#solon").value, 3, 8, 4) }, (_, i) => "لاعب " + AR(i + 1)) : MODES[k];
+  S.teams = names.map(makeTeam); S.match = null; save(); route();
+}
 function removeTeam(i) { S.teams.splice(i, 1); S.match = null; save(); route(); }
 function setAvatar(i, a) { S.teams[i].avatar = a; S.teams[i].photo = null; save(); route(); }
 async function setPhoto(i, f) {

@@ -43,7 +43,7 @@ GAMES.tf = {
   playView() {
     const g = S.match.g, item = CARDS.tf[g.idx];
     return `${turnHead()}
-    <div class="tfcard ${g.flash}" style="--cc:#2f7de1">
+    <div class="tfcard ${g.flash}" style="--cc:${Match.team().color}">
       <div class="small">✓ ${AR(g.right)} &nbsp; ✗ ${AR(g.wrong)}</div>
       <div class="text">${esc(item.t)}</div>
       ${timerHTML(g.left, g.sec)}

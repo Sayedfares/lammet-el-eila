@@ -21,9 +21,16 @@ const CARDS = Object.fromEntries(Object.entries(RAW).map(([k, v]) => [k, parseCa
 
 // ===== التخزين =====
 const KEY = "lamma-v2";
+const AVATARS = ["🦁", "🐯", "🐼", "🦊", "🐸", "🐵", "🦄", "🐙", "🐝", "🦉", "🐢", "🐬", "⭐", "🔥", "⚡", "🍉"];
+// لون لكل فريق: بيظهر على كارت الدور والأسئلة عشان كل واحد يعرف هو في أنهي فريق
+const TEAM_COLORS = [
+  { c: "#d64545", n: "الأحمر" }, { c: "#2f7de1", n: "الأزرق" }, { c: "#1f9d55", n: "الأخضر" }, { c: "#b7791f", n: "الأصفر" },
+  { c: "#8a4fd8", n: "البنفسجي" }, { c: "#e8603c", n: "البرتقالي" }, { c: "#e84393", n: "الوردي" }, { c: "#12a3b4", n: "التركواز" }
+];
+function makeTeam(name, i) { return { name, avatar: AVATARS[i % AVATARS.length], photo: null, color: TEAM_COLORS[i % TEAM_COLORS.length].c }; }
 function defaults() {
   return {
-    teams: [{ name: "فريق ١", avatar: "🦁", photo: null }, { name: "فريق ٢", avatar: "🐯", photo: null }],
+    teams: [makeTeam("الفريق الأحمر", 0), makeTeam("الفريق الأزرق", 1)],
     prefs: { level: "mix", packs: { g: true, rm: false, eid: false, sm: false }, sound: true, lamma: { q: true, r: true, c: true, f: true } },
     family: [], decks: {}, match: null
   };
@@ -37,6 +44,7 @@ const S = (() => {
   s.prefs = Object.assign(defaults().prefs, d.prefs);
   s.prefs.packs = Object.assign(defaults().prefs.packs, d.prefs && d.prefs.packs);
   s.prefs.lamma = Object.assign(defaults().prefs.lamma, d.prefs && d.prefs.lamma);
+  s.teams.forEach((t, i) => { if (!t.color) t.color = TEAM_COLORS[i % TEAM_COLORS.length].c; });
   return s;
 })();
 function save() {
@@ -146,7 +154,6 @@ function paintTimer() {
 function toggleTimer() { Timer.running ? Timer.stop() : Timer.resume(); paintTimer(); }
 
 // ===== الفرق والأفاتار =====
-const AVATARS = ["🦁", "🐯", "🐼", "🦊", "🐸", "🐵", "🦄", "🐙", "🐝", "🦉", "🐢", "🐬", "⭐", "🔥", "⚡", "🍉"];
 function avatar(t, size = "") {
   return t && t.photo
     ? `<img class="av ${size}" src="${esc(t.photo)}" alt="">`
@@ -188,13 +195,13 @@ const Match = {
 };
 function turnHead() {
   const m = S.match, t = Match.team();
-  return `<div class="turnhead">${avatar(t, "lg")}<div><div class="turn">الدور على: ${esc(t.name)}</div>
+  return `<div class="turnhead" style="--tc:${t.color}">${avatar(t, "lg")}<div><div class="turn">الدور على: ${esc(t.name)}</div>
   <div class="meta">الجولة ${AR(Match.roundNo())} من ${AR(m.rounds)}</div></div></div>`;
 }
 function scoreboard() {
   const m = S.match;
   return `<section class="panel"><h2>النتيجة</h2><ul class="board">${S.teams.map((t, i) =>
-    `<li class="${!m.over && i === m.turn ? "now" : ""}">${avatar(t, "sm")}<span class="nm">${esc(t.name)}</span><b>${AR(m.scores[i])}</b></li>`).join("")}</ul></section>`;
+    `<li class="${!m.over && i === m.turn ? "now" : ""}" style="--tc:${t.color}">${avatar(t, "sm")}<span class="nm">${esc(t.name)}</span><b>${AR(m.scores[i])}</b></li>`).join("")}</ul></section>`;
 }
 function endScreen(id) {
   const m = S.match;
@@ -204,7 +211,7 @@ function endScreen(id) {
   const medal = i => ["🥇", "🥈", "🥉"][i] || "";
   return `<div class="end"><div class="trophy">🏆</div><h1>${w.length > 1 ? "تعادل!" : "مبروك!"}</h1>
   <div class="winners">${w.map(r => `<div class="wn">${avatar(r.t, "xl")}<b>${esc(r.t.name)}</b></div>`).join("")}</div>
-  <section class="panel"><ul class="board">${rows.map((r, i) => `<li>${medal(i)} ${avatar(r.t, "sm")}<span class="nm">${esc(r.t.name)}</span><b>${AR(r.s)}</b></li>`).join("")}</ul></section>
+  <section class="panel"><ul class="board">${rows.map((r, i) => `<li style="--tc:${r.t.color}">${medal(i)} ${avatar(r.t, "sm")}<span class="nm">${esc(r.t.name)}</span><b>${AR(r.s)}</b></li>`).join("")}</ul></section>
   <button class="primary" onclick="S.match=null;save();route()">نلعب تاني ↻</button>
   <a class="btn ghost" href="#/">ارجع للمكتبة</a></div>`;
 }

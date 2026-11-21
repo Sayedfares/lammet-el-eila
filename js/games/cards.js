@@ -63,7 +63,7 @@ function makeCardGame(def) {
       const m = S.match, card = m.g.card, c = this.cat(card.key), item = c.list()[card.idx];
       const sec = this.secFor(card), left = card.flipped ? card.left : sec;
       return `${turnHead()}
-      <div class="flip ${card.flipped ? "on" : ""}" id="flip" style="--cc:${c.color}">
+      <div class="flip ${card.flipped ? "on" : ""}" id="flip" style="--cc:${Match.team().color}">
         <div class="flip-in">
           <button class="face front" onclick="G('${id}').flip()" ${card.flipped ? 'tabindex="-1" aria-hidden="true"' : ""}>
             <span class="ic">${c.icon}</span><b>${esc(c.label)}</b><small>${ptsTxt(c.pts)}</small>

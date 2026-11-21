@@ -1,0 +1,9 @@
+# إعداد النشر على Render (الباقة المجانية). شوف README → «أونلاين على Render».
+services:
+  - type: web
+    name: lammet-el-eila
+    runtime: python
+    plan: free
+    buildCommand: echo "no dependencies"   # السيرفر بيستخدم مكتبة بايثون العادية بس
+    startCommand: python server.py          # بيقرا PORT اللي Render بيديه
+    healthCheckPath: /api/ping

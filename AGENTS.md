@@ -25,9 +25,12 @@ Family party-game library in Egyptian Arabic (RTL). Read this before editing.
 | `js/games/cards.js` | `makeCardGame()` factory + games `lamma`, `proverbs`, `emoji` |
 | `js/games/tf.js` | صح ولا غلط |
 | `js/games/heads.js` | على الجبهة (device tilt via `deviceorientation`, tap fallback) |
-| `js/games/bluff.js` | كدّاب ولا بجد؟ client (polls `/api/state` every 1.2s) |
+| `js/games/room.js` | `RoomBase`: shared client plumbing for room games (session in localStorage `lamma-<id>`, `api`, polling `/api/state` every 1.2s, entry/join screen, `act`) |
+| `js/games/bluff.js` | كدّاب ولا بجد؟ client (`{...RoomBase}`) |
+| `js/games/hide.js` | اتخبّى واتنكّر client (prop-hunt style; object list comes from `HIDE_OBJECTS` in `server.py`) |
+| `js/games/killer.js` | مين القاتل؟ client (Among Us style) + the 3 mini-tasks (`seq`/`hold`/`code`, `KTASKS`) |
 | `js/app.js` | Router (`#/`, `#/teams`, `#/family`, `#/play/<id>`), home library, teams editor, family-questions editor. `ORDER` = games shown on home |
-| `server.py` | Static files + in-memory rooms API for the bluff game |
+| `server.py` | Static files + in-memory rooms API. `BaseRoom` → `BluffRoom`, `KillerRoom`, `HideRoom` (create with `game:"killer"|"hide"`; phases lobby/play/talk/vote/result/end, deadlines advanced lazily by `tick()` on every act/view) |
 | `data/bluff.json` | Bluff prompts: `facts` = `[question with ____, truth]`, `people` = templates with `{p}` |
 
 ## Content format (`js/content.js`)
@@ -44,11 +47,16 @@ Each line: `"text|answer|tags"`, tags space-separated:
 3. Team games: `Match.begin(id, rounds, state)`, `Match.add(points)`, `Match.next()`, render `endScreen(id)` when `S.match.over`.
 4. Re-render with `route()`. Stop timers/listeners in `onExit()`.
 
+## Teams
+- Each team has a `color` (`TEAM_COLORS`, migrated for old saves). `turnHead()`, scoreboard and the card/true-false faces use it. Presets (1v1, 1v2, 1 vs all, 2/3/4 teams, solo) live in `setMode()` in `app.js`.
+
 ## Gotchas
 - `S` is persisted to `localStorage` key `lamma-v2`. Changing its shape? Merge defaults in `core.js` so old saves still load.
 - Only one `Timer` runs at a time; `Timer.owner` tells a game whether the running timer is its own after a re-render or reload.
 - Don't reuse class names across components (`.back` is the card back face; the header link is `.backlink`).
 - Elements with the `hidden` attribute rely on the global `[hidden]{display:none!important}` rule.
+- Killer game: roles, other players' tasks and bodies are server-secret; `view(me)` only leaks what that player may know (killer mates, own tasks). Roles of everyone only at `end`, ejected role only in `result`. Kill cooldown is enforced server-side.
+- Adding another room game: new `Room` subclass of `BaseRoom` in `server.py` + `{...RoomBase}` client; join checks `game` so codes don't cross games.
 - Server: all room state changes go through `Room.act()` under `LOCK`. Tokens are secret per player; `pub` ids (`p1`, `p2`…) are what clients see. Never send `truth` or answer owners to clients before the `reveal` phase.
 - Server blocks `/data/` and `.py` paths so players can't read the answers.
 
