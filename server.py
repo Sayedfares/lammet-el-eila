@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """سيرفر لمّة العيلة.
 
-بيعرض ملفات التطبيق، وبيشغّل أوض ألعاب («كدّاب ولا بجد؟» و«مين القاتل؟» و«اتخبّى واتنكّر») اللي كل واحد بيلعبها من موبايله.
+بيعرض ملفات التطبيق، وبيشغّل أوض ألعاب («كدّاب ولا بجد؟» و«مين القاتل؟» و«اتخبّى واتنكّر» و«سباق الجري») اللي كل واحد بيلعبها من موبايله.
 كل الموبايلات لازم تكون على نفس الواي فاي بتاع الجهاز اللي شغّال عليه السيرفر.
 
 التشغيل:  python server.py        (أو PORT=9000 python server.py)
@@ -645,6 +645,87 @@ class HideRoom(BaseRoom):
         return v
 
 
+RACE_SECS = (30, 45, 60, 90)
+RACE_COUNT = 5               # ثواني العدّ التنازلي قبل ما السباق يبدأ
+RACE_GRACE = 8               # مهلة زيادة بعد وقت السباق لحد ما كل الموبايلات تبعت نتيجتها
+RACE_MAX = 100000
+
+
+class RaceRoom(BaseRoom):
+    """سباق الجري: كل واحد بيجري على موبايله في نفس الحواجز (seed واحد) والسيرفر بيرتّب النقط."""
+    game = "race"
+
+    def __init__(self):
+        super().__init__()
+        self.secs = 45
+        self.reset()
+
+    def reset(self):
+        self.seed, self.deadline = 0, 0
+        self.score, self.fin = {}, set()
+
+    def tick(self):
+        if self.phase in ("count", "run") and time.time() >= self.deadline:
+            if self.phase == "count":
+                self.phase, self.deadline = "run", time.time() + self.secs + RACE_GRACE
+            else:
+                self.phase = "end"
+            self.bump()
+
+    def act(self, pub, kind, data):
+        self.tick()
+        ph = self.phase
+        if kind == "settings":
+            self.need_host(pub)
+            if ph != "lobby":
+                raise GameError("الإعدادات بتتغيّر قبل البداية بس")
+            s = data.get("secs")
+            if isinstance(s, bool) or s not in RACE_SECS:
+                raise GameError("إعدادات مش مقبولة")
+            self.secs = s
+        elif kind == "start":
+            self.need_host(pub)
+            if ph != "lobby":
+                raise GameError("اللعبة شغّالة")
+            if len(self.players) < 2:
+                raise GameError("محتاجين لاعيبين على الأقل")
+            self.reset()
+            self.seed = random.randint(1, 10 ** 6)
+            self.score = {p: 0 for p in self.players}
+            self.phase, self.deadline = "count", time.time() + RACE_COUNT
+        elif kind == "again":
+            self.need_host(pub)
+            if ph != "end":
+                raise GameError("مش دلوقتي")
+            self.reset()
+            self.phase = "lobby"
+        elif kind in ("progress", "finish"):
+            sc = data.get("score")
+            if ph != "run" or isinstance(sc, bool) or not isinstance(sc, int) or not 0 <= sc <= RACE_MAX:
+                raise GameError("مش دلوقتي")
+            if pub not in self.fin:
+                self.score[pub] = max(self.score.get(pub, 0), sc)
+                if kind == "finish":
+                    self.fin.add(pub)
+                    if len(self.fin) == len(self.players):
+                        self.phase = "end"
+        else:
+            raise GameError("طلب مش معروف")
+        self.bump()
+
+    def view(self, me):
+        self.fix_host()
+        self.tick()
+        ph = self.phase
+        v = {"ver": self.ver, "game": self.game, "code": self.code, "me": me, "host": self.host, "phase": ph, "secs": self.secs,
+             "secsList": list(RACE_SECS), "min": 2,
+             "players": [{"id": p, "name": d["name"], "avatar": d["avatar"], "score": self.score.get(p, 0), "fin": p in self.fin}
+                         for p, d in self.players.items()]}
+        if ph in ("count", "run"):
+            v.update(seed=self.seed, left=max(0, self.deadline - time.time()))
+        return v
+
+
 def api(path, data):
     with LOCK:
         now = time.time()
@@ -652,7 +733,7 @@ def api(path, data):
             del ROOMS[code]
 
         if path == "create":
-            kind = {"killer": KillerRoom, "hide": HideRoom}.get(data.get("game"))
+            kind = {"killer": KillerRoom, "hide": HideRoom, "race": RaceRoom}.get(data.get("game"))
             if kind:
                 room = kind()
                 token = room.add_player(data.get("name"), data.get("avatar"))

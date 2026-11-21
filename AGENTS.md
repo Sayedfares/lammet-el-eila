@@ -27,10 +27,13 @@ Family party-game library in Egyptian Arabic (RTL). Read this before editing.
 | `js/games/heads.js` | على الجبهة (device tilt via `deviceorientation`, tap fallback) |
 | `js/games/room.js` | `RoomBase`: shared client plumbing for room games (session in localStorage `lamma-<id>`, `api`, polling `/api/state` every 1.2s, entry/join screen, `act`) |
 | `js/games/bluff.js` | كدّاب ولا بجد؟ client (`{...RoomBase}`) |
+| `js/games/engines.js` | canvas engines: `runnerEngine` (3-lane runner, seeded rows so every device sees the same course) and `launcherEngine` (slingshot physics) |
+| `js/games/arcade.js` | `makeTurnGame()` for one-phone team games: game defines `play(arena, done, opts, team)` returning a cleanup fn. Defines runner, boats, cannon, tap, simon, hunt, draw, heavy, code |
+| `js/games/race.js` | سباق الجري room game; runs `runnerEngine` in a body overlay so polling repaints don't kill it (server: `RaceRoom`) |
 | `js/games/hide.js` | اتخبّى واتنكّر client (prop-hunt style; object list comes from `HIDE_OBJECTS` in `server.py`) |
 | `js/games/killer.js` | مين القاتل؟ client (Among Us style) + the 3 mini-tasks (`seq`/`hold`/`code`, `KTASKS`) |
 | `js/app.js` | Router (`#/`, `#/teams`, `#/family`, `#/play/<id>`), home library, teams editor, family-questions editor. `ORDER` = games shown on home |
-| `server.py` | Static files + in-memory rooms API. `BaseRoom` → `BluffRoom`, `KillerRoom`, `HideRoom` (create with `game:"killer"|"hide"`; phases lobby/play/talk/vote/result/end, deadlines advanced lazily by `tick()` on every act/view) |
+| `server.py` | Static files + in-memory rooms API. `BaseRoom` → `BluffRoom`, `KillerRoom`, `HideRoom`, `RaceRoom` (create with `game:"killer"|"hide"|"race"`; phases lobby/play/talk/vote/result/end, deadlines advanced lazily by `tick()` on every act/view) |
 | `data/bluff.json` | Bluff prompts: `facts` = `[question with ____, truth]`, `people` = templates with `{p}` |
 
 ## Content format (`js/content.js`)

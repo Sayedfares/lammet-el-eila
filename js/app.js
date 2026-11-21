@@ -1,5 +1,5 @@
 // ===== التطبيق: المكتبة، الفرق، أسئلة العيلة، والتنقّل =====
-const ORDER = ["lamma", "tf", "heads", "proverbs", "emoji", "bluff", "killer", "hide"];
+const ORDER = ["lamma", "tf", "heads", "proverbs", "emoji", "bluff", "killer", "hide", "race", "runner", "boats", "cannon", "tap", "simon", "hunt", "draw", "heavy", "code"];
 
 function soundBtn() {
   return `<button class="icon" onclick="S.prefs.sound=!S.prefs.sound;save();route()" aria-label="${S.prefs.sound ? "اقفل الصوت" : "شغّل الصوت"}">${S.prefs.sound ? "🔊" : "🔇"}</button>`;
